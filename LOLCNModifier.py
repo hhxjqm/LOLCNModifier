@@ -133,7 +133,7 @@ def callback(url):
 def create_main_window():
     # 创建主窗口
     root = tk.Tk()
-    root.title("父亲飘呀飘的汉化小程序")
+    root.title("飘呀飘的汉化小程序")
 
     # 添加标签和输入框（LOL文件路径）
     label = tk.Label(root, text="Enter LOL File Path:")
