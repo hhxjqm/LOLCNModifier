@@ -8,6 +8,9 @@
 
 [下载链接](https://github.com/hhxjqm/LOLCNModifier/releases/download/v1.1.0/LOLCNModifier.exe)
 
+# 使用方法
+
+- 点击Brows，找到 Riot Games->League of Legends->LeagueClient.exe
 
 # 贡献
 
