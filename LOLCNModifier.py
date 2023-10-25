@@ -1,5 +1,5 @@
 # Script Name: LOL 汉化程序
-# Author: 黄瀚轩
+# Author: 飘呀飘
 # Version: 1.1.0
 # Description: This script allows users to modify shortcuts for League of Legends clients to support Chinese localization.
 # Date: 2023-10-24
