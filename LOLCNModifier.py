@@ -9,14 +9,18 @@ import pythoncom
 import win32com.client
 from win32com.client import Dispatch
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 import psutil
+import stat
+import ctypes
+import webbrowser
 
 version_number = "1.1.0"
-desktop_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-shortcut_path = os.path.join(desktop_dir, "LeagueClient - Shortcut.lnk")
 user_home_dir = os.path.expanduser("~")
+desktop_dir = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 script_data_dir = os.path.join(user_home_dir, "LOLPathCN")
+#shortcut_path = os.path.join(desktop_dir, "LeagueClient - Shortcut.lnk")
+shortcut_path = os.path.join(script_data_dir, "LeagueClient - Shortcut.lnk")
 if not os.path.exists(script_data_dir):
     os.makedirs(script_data_dir)
 last_file_path_file = os.path.join(script_data_dir, "last_file_path.txt")
@@ -24,12 +28,15 @@ last_pbe_file_path_file = os.path.join(script_data_dir, "last_pbe_file_path.txt"
 last_account_pw = os.path.join(script_data_dir, "last_acc_pw.txt")
 last_pbe_account_pw = os.path.join(script_data_dir, "last_pbe_acc_pw.txt")
 
-def get_shortcut_target(shortcut_path):
+def check_if_pbe(shortcut_path):
     shell = win32com.client.Dispatch("WScript.Shell")
     shortcut = shell.CreateShortCut(shortcut_path)
-    return shortcut.Targetpath
-
-
+    if ("pbe" in shortcut.Arguments.lower()):
+        return True
+    if ("pbe" in shortcut.TargetPath.lower()):
+        return True
+    return False
+    
 def close_riot_client_services():
     wmi = win32com.client.GetObject('winmgmts:')
     processes = wmi.InstancesOf('Win32_Process')
@@ -47,8 +54,8 @@ def close_riot_client_services():
 def update_status_label():
     status_label_text = "当前: "
     if os.path.exists(shortcut_path):
-        target_path = get_shortcut_target(shortcut_path)
-        if "pbe" in target_path.lower():
+        pbe =  check_if_pbe(shortcut_path)
+        if pbe:
             status_label_text += "PBE"
         else:
             status_label_text += "正式服"
@@ -103,17 +110,20 @@ def modify_shortcut_target(shortcut_path, target_path, arguments):
     shortcut.save() 
 
 def run_lol_shortcut():
-    os.startfile(os.path.join(desktop_dir, "LeagueClient - Shortcut.lnk"))
-        
+    os.startfile(shortcut_path)
+
 def create_shortcut(target_file_path, shortcut_path, status_label):
-    if "LeagueClient" not in target_file_path:
-        error_msg = "Error: The selected file name should be 'LeagueClient'."
-        messagebox.showerror("Error", error_msg)
-        return False
-    close_riot_client_services()
-    if os.path.exists(shortcut_path):
-        os.remove(shortcut_path)    
     try:
+        if "LeagueClient" not in target_file_path:
+            error_msg = "Error: The selected file name should be 'LeagueClient'."
+            ctypes.windll.user32.MessageBoxW(0, error_msg, "Error", 0)
+            return False
+        
+        close_riot_client_services()
+        
+        if os.path.exists(shortcut_path):
+            os.remove(shortcut_path)    
+        
         pythoncom.CoInitialize()
         shell = win32com.client.Dispatch("WScript.Shell")
         shortcut = shell.CreateShortCut(shortcut_path)
@@ -123,17 +133,24 @@ def create_shortcut(target_file_path, shortcut_path, status_label):
         status_label.config(text=update_status_label())
         run_lol_shortcut()
         return True
+    except PermissionError as e:
+        ctypes.windll.user32.MessageBoxW(0, "Permission Error: You do not have sufficient privileges.", "Error", 0)
+        return False
+    except EnvironmentError as e:
+        ctypes.windll.user32.MessageBoxW(0, "Environment Error: The operation could not be completed.", "Error", 0)
+        return False
     except Exception as e:
+        ctypes.windll.user32.MessageBoxW(0, f"An error occurred: {e}", "Error", 0)
         return False
 
+
 def callback(url):
-    import webbrowser
     webbrowser.open_new(url)
 
 def create_main_window():
     # 创建主窗口
     root = tk.Tk()
-    root.title("飘呀飘的汉化小程序")
+    root.title("父亲飘呀飘的汉化小程序")
 
     # 添加标签和输入框（LOL文件路径）
     label = tk.Label(root, text="Enter LOL File Path:")
