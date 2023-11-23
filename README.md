@@ -1,4 +1,4 @@
-# LOLCNModifier
+# LOLCNModifier (自用)
 
 # 功能
 
